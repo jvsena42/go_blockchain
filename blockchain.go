@@ -131,6 +131,16 @@ func (bc *Blockchain) ValidProof(nonce int, previousHash [32]byte, transactions 
 	return guessHashString[:dificulty] == zeros
 }
 
+func (bc *Blockchain) ProofOfWOrk() int { //TODO IMPLEMENT GOROUTINES
+	transaction := bc.CopyTransactionPool()
+	previousHash := bc.LastBlock().Hash()
+	nonce := 0
+	for !bc.ValidProof(nonce, previousHash, transaction, MINING_DIFICULTY) {
+		nonce++
+	}
+	return nonce
+}
+
 func (bc *Blockchain) LastBlock() *Block {
 	return bc.chain[len(bc.chain)-1]
 }
@@ -150,22 +160,26 @@ func init() {
 func main() {
 	blockchain := NewBlockchain()
 	previousHash := blockchain.LastBlock().previousHash
-	blockchain.CreateBlock(10, previousHash)
+	nonce := blockchain.ProofOfWOrk()
+	blockchain.CreateBlock(nonce, previousHash)
 
 	blockchain.AddTransacion("Tony", "Peter", 10089.67897)
 	blockchain.AddTransacion("Tony", "Vingadores", 789453123.67897)
 
 	previousHash = blockchain.LastBlock().previousHash
-	blockchain.CreateBlock(7, previousHash)
+	nonce = blockchain.ProofOfWOrk()
+	blockchain.CreateBlock(nonce, previousHash)
 	blockchain.AddTransacion("Peter", "Pizaria", 0.00000789)
 
 	previousHash = blockchain.LastBlock().previousHash
-	blockchain.CreateBlock(119, previousHash)
+	nonce = blockchain.ProofOfWOrk()
+	blockchain.CreateBlock(nonce, previousHash)
 
 	blockchain.AddTransacion("Satoshi Nakamoto", "jvsena42", 89.6697)
 
 	previousHash = blockchain.LastBlock().previousHash
-	blockchain.CreateBlock(5871, previousHash)
+	nonce = blockchain.ProofOfWOrk()
+	blockchain.CreateBlock(nonce, previousHash)
 
 	blockchain.Print()
 }
