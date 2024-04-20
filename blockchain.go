@@ -1,6 +1,8 @@
 package main
 
 import (
+	"crypto/sha256"
+	"encoding/json"
 	"fmt"
 	"log"
 	"strings"
@@ -38,6 +40,25 @@ func NewBlockchain() *Blockchain {
 	bc := new(Blockchain)
 	bc.CreateBlock(0, "hash #0 genesis block")
 	return bc
+}
+
+func (b *Block) Hash() [32]byte {
+	m, _ := b.MarshalJson()
+	return sha256.Sum256([]byte(m))
+}
+
+func (b *Block) MarshalJson() ([]byte, error) {
+	return json.Marshal(struct {
+		Nonce        int      `json:"nonce"`
+		PreviousHash string   `json:"previous_hash"`
+		TimeStamp    int64    `json:"time_stamp"`
+		Transactions []string `json:"transactions"`
+	}{
+		Nonce:        b.nonce,
+		PreviousHash: b.previousHash,
+		TimeStamp:    b.timeStamp,
+		Transactions: b.transactions,
+	})
 }
 
 func (bc *Blockchain) CreateBlock(nonce int, previousHash string) *Block {
