@@ -12,9 +12,9 @@ import (
 const MINING_DIFICULTY = 3
 
 type Block struct {
+	timeStamp    int64
 	nonce        int
 	previousHash [32]byte
-	timeStamp    int64
 	transactions []*Transaction
 }
 
@@ -122,6 +122,13 @@ func (bc *Blockchain) CopyTransactionPool() []*Transaction {
 	}
 
 	return transactions
+}
+
+func (bc *Blockchain) ValidProof(nonce int, previousHash [32]byte, transactions []*Transaction, dificulty int) bool {
+	zeros := strings.Repeat("0", dificulty)
+	guessBlock := Block{timeStamp: 0, nonce: nonce, previousHash: previousHash, transactions: transactions}
+	guessHashString := fmt.Sprintf("%x", guessBlock.Hash())
+	return guessHashString[:dificulty] == zeros
 }
 
 func (bc *Blockchain) LastBlock() *Block {
