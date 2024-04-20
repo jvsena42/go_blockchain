@@ -22,6 +22,13 @@ type Transaction struct {
 	value            float32
 }
 
+func (t *Transaction) Print() {
+	fmt.Printf("%s\n", strings.Repeat("-", 40))
+	fmt.Printf("sender_blockchain_address:\t%s\n", t.senderAddress)
+	fmt.Printf("recipient_blockchain_address:\t%s\n", t.recipientAddress)
+	fmt.Printf("value:\t\t%1f\n", t.value)
+}
+
 func NewTransaction(sender string, recipient string, value float32) *Transaction {
 
 	return &Transaction{
