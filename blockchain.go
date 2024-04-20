@@ -16,6 +16,21 @@ type Block struct {
 	transactions []string
 }
 
+type Transaction struct {
+	senderAddress    string
+	recipientAddress string
+	value            float32
+}
+
+func NewTransaction(sender string, recipient string, value float32) *Transaction {
+
+	return &Transaction{
+		senderAddress:    sender,
+		recipientAddress: recipient,
+		value:            value,
+	}
+}
+
 func NewBlock(nonce int, previousHash [32]byte) *Block {
 	b := new(Block)
 	b.timeStamp = time.Now().UnixNano()
