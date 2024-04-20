@@ -68,6 +68,10 @@ func (bc *Blockchain) CreateBlock(nonce int, previousHash [32]byte) *Block {
 	return b
 }
 
+func (bc *Blockchain) LastBlock() *Block {
+	return bc.chain[len(bc.chain)-1]
+}
+
 func (bc *Blockchain) Print() {
 	for i, block := range bc.chain {
 		fmt.Printf("%s Block %d %s\n", strings.Repeat("=", 10), i, strings.Repeat("=", 10))
@@ -82,5 +86,17 @@ func init() {
 
 func main() {
 	blockchain := NewBlockchain()
+	previousHash := blockchain.LastBlock().previousHash
+	blockchain.CreateBlock(10, previousHash)
+
+	previousHash = blockchain.LastBlock().previousHash
+	blockchain.CreateBlock(7, previousHash)
+
+	previousHash = blockchain.LastBlock().previousHash
+	blockchain.CreateBlock(119, previousHash)
+
+	previousHash = blockchain.LastBlock().previousHash
+	blockchain.CreateBlock(5871, previousHash)
+
 	blockchain.Print()
 }
