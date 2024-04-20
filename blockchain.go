@@ -22,6 +22,11 @@ type Transaction struct {
 	value            float32
 }
 
+type Blockchain struct {
+	transactionPool []*Transaction
+	chain           []*Block
+}
+
 func (t *Transaction) Print() {
 	fmt.Printf("%s\n", strings.Repeat("-", 40))
 	fmt.Printf("sender_blockchain_address:\t%s\n", t.senderAddress)
@@ -66,11 +71,6 @@ func (b *Block) Print() {
 	for _, t := range b.transactions {
 		t.Print()
 	}
-}
-
-type Blockchain struct {
-	transactionPool []*Transaction
-	chain           []*Block
 }
 
 func NewBlockchain() *Blockchain {
@@ -133,11 +133,17 @@ func main() {
 	previousHash := blockchain.LastBlock().previousHash
 	blockchain.CreateBlock(10, previousHash)
 
+	blockchain.AddTransacion("Tony", "Peter", 10089.67897)
+	blockchain.AddTransacion("Tony", "Vingadores", 789453123.67897)
+
 	previousHash = blockchain.LastBlock().previousHash
 	blockchain.CreateBlock(7, previousHash)
+	blockchain.AddTransacion("Peter", "Pizaria", 0.00000789)
 
 	previousHash = blockchain.LastBlock().previousHash
 	blockchain.CreateBlock(119, previousHash)
+
+	blockchain.AddTransacion("Satoshi Nakamoto", "jvsena42", 89.6697)
 
 	previousHash = blockchain.LastBlock().previousHash
 	blockchain.CreateBlock(5871, previousHash)
