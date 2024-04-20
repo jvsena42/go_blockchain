@@ -9,7 +9,11 @@ import (
 	"time"
 )
 
-const MINING_DIFICULTY = 3
+const (
+	MINING_DIFICULTY = 3
+	MINING_SENDER    = "BLOCKCHAIN REWARD SYSTEM"
+	MINING_REWARD    = 1.0
+)
 
 type Block struct {
 	timeStamp    int64
@@ -25,8 +29,9 @@ type Transaction struct {
 }
 
 type Blockchain struct {
-	transactionPool []*Transaction
-	chain           []*Block
+	transactionPool   []*Transaction
+	chain             []*Block
+	blockChainAddress string
 }
 
 func (t *Transaction) Print() {
@@ -75,10 +80,11 @@ func (b *Block) Print() {
 	}
 }
 
-func NewBlockchain() *Blockchain {
+func NewBlockchain(blockChainAddress string) *Blockchain {
 	b := &Block{}
 	bc := new(Blockchain)
 	bc.CreateBlock(0, b.Hash())
+	bc.blockChainAddress = blockChainAddress
 	return bc
 }
 
@@ -145,6 +151,15 @@ func (bc *Blockchain) LastBlock() *Block {
 	return bc.chain[len(bc.chain)-1]
 }
 
+func (bc *Blockchain) Mining() bool {
+	bc.AddTransacion(MINING_SENDER, bc.blockChainAddress, MINING_REWARD)
+	previousHash := bc.LastBlock().previousHash
+	nonce := bc.ProofOfWOrk()
+	bc.CreateBlock(nonce, previousHash)
+	log.Println("action=mining, status=success")
+	return true
+}
+
 func (bc *Blockchain) Print() {
 	for i, block := range bc.chain {
 		fmt.Printf("%s Block %d %s\n", strings.Repeat("=", 10), i, strings.Repeat("=", 10))
@@ -158,28 +173,21 @@ func init() {
 }
 
 func main() {
-	blockchain := NewBlockchain()
-	previousHash := blockchain.LastBlock().previousHash
-	nonce := blockchain.ProofOfWOrk()
-	blockchain.CreateBlock(nonce, previousHash)
+	minerAddress := "miner_blockchain_address"
+	blockchain := NewBlockchain(minerAddress)
 
 	blockchain.AddTransacion("Tony", "Peter", 10089.67897)
 	blockchain.AddTransacion("Tony", "Vingadores", 789453123.67897)
 
-	previousHash = blockchain.LastBlock().previousHash
-	nonce = blockchain.ProofOfWOrk()
-	blockchain.CreateBlock(nonce, previousHash)
+	blockchain.Mining()
+
 	blockchain.AddTransacion("Peter", "Pizaria", 0.00000789)
 
-	previousHash = blockchain.LastBlock().previousHash
-	nonce = blockchain.ProofOfWOrk()
-	blockchain.CreateBlock(nonce, previousHash)
+	blockchain.Mining()
 
 	blockchain.AddTransacion("Satoshi Nakamoto", "jvsena42", 89.6697)
 
-	previousHash = blockchain.LastBlock().previousHash
-	nonce = blockchain.ProofOfWOrk()
-	blockchain.CreateBlock(nonce, previousHash)
+	blockchain.Mining()
 
 	blockchain.Print()
 }
