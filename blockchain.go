@@ -9,6 +9,8 @@ import (
 	"time"
 )
 
+const MINING_DIFICULTY = 3
+
 type Block struct {
 	nonce        int
 	previousHash [32]byte
@@ -110,6 +112,16 @@ func (bc *Blockchain) AddTransacion(sender string, recipient string, value float
 	t := NewTransaction(sender, recipient, value)
 	bc.transactionPool = append(bc.transactionPool, t)
 	return false
+}
+
+func (bc *Blockchain) CopyTransactionPool() []*Transaction {
+	transactions := make([]*Transaction, len(bc.transactionPool))
+
+	for _, t := range bc.transactionPool {
+		transactions = append(transactions, NewTransaction(t.senderAddress, t.recipientAddress, t.value))
+	}
+
+	return transactions
 }
 
 func (bc *Blockchain) LastBlock() *Block {
