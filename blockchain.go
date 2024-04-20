@@ -29,6 +29,18 @@ func (t *Transaction) Print() {
 	fmt.Printf("value:\t\t%1f\n", t.value)
 }
 
+func (t *Transaction) MarshalJson() ([]byte, error) {
+	return json.Marshal(struct {
+		SenderAddress    string  `json:"sender_address"`
+		RecipientAddress string  `json:"recipient_address"`
+		Value            float32 `json:"value"`
+	}{
+		SenderAddress:    t.senderAddress,
+		RecipientAddress: t.recipientAddress,
+		Value:            t.value,
+	})
+}
+
 func NewTransaction(sender string, recipient string, value float32) *Transaction {
 
 	return &Transaction{
