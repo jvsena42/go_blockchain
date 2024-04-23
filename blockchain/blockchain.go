@@ -1,9 +1,14 @@
 package blockchain
 
 import (
+	"crypto/ecdsa"
+	"crypto/sha256"
+	"encoding/json"
 	"fmt"
 	"log"
 	"strings"
+
+	"github.com/jvsena42/go_blockchain/utils"
 )
 
 const (
@@ -54,6 +59,12 @@ func (bc *Blockchain) AddTransacion(sender string, recipient string, value float
 	t := NewTransaction(sender, recipient, value)
 	bc.transactionPool = append(bc.transactionPool, t)
 	return false
+}
+
+func (bc *Blockchain) VerifyTransactionSignature(senderPublicKey *ecdsa.PublicKey, s utils.Signature, t *Transaction) bool {
+	m, _ := json.Marshal(t)
+	h := sha256.Sum256([]byte(m))
+	return ecdsa.Verify(senderPublicKey, h[:], s.R, s.S)
 }
 
 func (bc *Blockchain) CopyTransactionPool() []*Transaction {
