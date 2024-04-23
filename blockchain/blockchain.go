@@ -55,13 +55,20 @@ func (bc *Blockchain) CreateBlock(nonce int, previousHash [32]byte) *Block {
 	return b
 }
 
-func (bc *Blockchain) AddTransacion(sender string, recipient string, value float32) bool {
+func (bc *Blockchain) AddTransacion(sender string, recipient string, value float32, senderPublicKey *ecdsa.PublicKey, s *utils.Signature) bool {
 	t := NewTransaction(sender, recipient, value)
-	bc.transactionPool = append(bc.transactionPool, t)
+
+	if sender == MINING_SENDER || bc.VerifyTransactionSignature(senderPublicKey, s, t) {
+		bc.transactionPool = append(bc.transactionPool, t)
+		return true
+	} else {
+		log.Println("ERROR: Transaction not valid")
+	}
+
 	return false
 }
 
-func (bc *Blockchain) VerifyTransactionSignature(senderPublicKey *ecdsa.PublicKey, s utils.Signature, t *Transaction) bool {
+func (bc *Blockchain) VerifyTransactionSignature(senderPublicKey *ecdsa.PublicKey, s *utils.Signature, t *Transaction) bool {
 	m, _ := json.Marshal(t)
 	h := sha256.Sum256([]byte(m))
 	return ecdsa.Verify(senderPublicKey, h[:], s.R, s.S)
@@ -99,7 +106,7 @@ func (bc *Blockchain) LastBlock() *Block {
 }
 
 func (bc *Blockchain) Mining() bool {
-	bc.AddTransacion(MINING_SENDER, bc.blockChainAddress, MINING_REWARD)
+	bc.AddTransacion(MINING_SENDER, bc.blockChainAddress, MINING_REWARD, nil, nil)
 	previousHash := bc.LastBlock().previousHash
 	nonce := bc.ProofOfWOrk()
 	bc.CreateBlock(nonce, previousHash)
