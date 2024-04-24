@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/jvsena42/go_blockchain/blockchain"
 	"github.com/jvsena42/go_blockchain/wallet"
 )
 
@@ -12,11 +13,22 @@ func init() {
 }
 
 func main() {
-	w := wallet.NewWallet()
-	fmt.Println("Private Key: ", w.PrivateKey())
-	fmt.Println("Public Key: ", w.PublicKey())
-	fmt.Println("BlockchainAddress: ", w.BlockChainAddress())
+	walletMiner := wallet.NewWallet()
+	walletPeter := wallet.NewWallet()
+	walletJvsena := wallet.NewWallet()
 
-	t := wallet.NewTransaction(w.PrivateKey(), w.PublicKey(), w.BlockChainAddress(), "jvsena42", 15684.9)
+	t := wallet.NewTransaction(walletPeter.PrivateKey(), walletPeter.PublicKey(), walletPeter.BlockChainAddress(), walletJvsena.BlockChainAddress(), 15684.9)
 	fmt.Printf("Signature: %s\n", t.GenerateSignature())
+
+	blockchain := blockchain.NewBlockchain(walletMiner.BlockChainAddress())
+	isAdded := blockchain.AddTransacion(walletPeter.BlockChainAddress(), walletJvsena.BlockChainAddress(), 15684.9, walletPeter.PublicKey(), t.GenerateSignature())
+
+	fmt.Println("Transaction added to transaction pool? ", isAdded)
+
+	blockchain.Mining()
+	blockchain.Print()
+
+	fmt.Printf("Miner has %.1f\n", blockchain.CalculateTotalAmount(walletMiner.BlockChainAddress()))
+	fmt.Printf("Jv has %.1f\n", blockchain.CalculateTotalAmount(walletJvsena.BlockChainAddress()))
+	fmt.Printf("Peter has %.1f\n", blockchain.CalculateTotalAmount(walletPeter.BlockChainAddress()))
 }
