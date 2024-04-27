@@ -3,6 +3,7 @@ package blockchain
 import (
 	"crypto/ecdsa"
 	"crypto/sha256"
+	"encoding/json"
 	"fmt"
 	"log"
 	"strings"
@@ -20,6 +21,7 @@ type Blockchain struct {
 	transactionPool   []*Transaction
 	chain             []*Block
 	blockChainAddress string
+	port              uint16
 }
 
 func (bc *Blockchain) CalculateTotalAmount(blockchainAddress string) float32 {
@@ -39,12 +41,21 @@ func (bc *Blockchain) CalculateTotalAmount(blockchainAddress string) float32 {
 	return totalAmount
 }
 
-func NewBlockchain(blockChainAddress string) *Blockchain {
+func NewBlockchain(blockChainAddress string, port uint16) *Blockchain {
 	b := &Block{}
 	bc := new(Blockchain)
 	bc.CreateBlock(0, b.Hash())
 	bc.blockChainAddress = blockChainAddress
+	bc.port = port
 	return bc
+}
+
+func (bc *Blockchain) MarshalJson() ([]byte, error) {
+	return json.Marshal(struct {
+		Blocks []*Block `json:"chain"`
+	}{
+		Blocks: bc.chain,
+	})
 }
 
 func (bc *Blockchain) CreateBlock(nonce int, previousHash [32]byte) *Block {
