@@ -71,7 +71,7 @@ func (ws *WalletServer) CreateTransaction(w http.ResponseWriter, r *http.Request
 
 		if !t.Validate() {
 			log.Println("ERROR: missing fields")
-			io.WriteString(w, string(utils.JsonStatus("fail")))
+			io.WriteString(w, string(utils.JsonStatus("ERROR: missing fields")))
 			return
 		}
 
