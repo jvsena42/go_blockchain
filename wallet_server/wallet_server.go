@@ -2,10 +2,13 @@ package main
 
 import (
 	"html/template"
+	"io"
 	"log"
 	"net/http"
 	"path"
 	"strconv"
+
+	"github.com/jvsena42/go_blockchain/wallet"
 )
 
 const pathToTemplateDir = "templates"
@@ -37,8 +40,23 @@ func (ws *WalletServer) Index(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func (ws *WalletServer) Wallet(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case http.MethodPost:
+		w.Header().Add("Content-Type", "application/json")
+		myWallet := wallet.NewWallet()
+		marshalWallet, _ := myWallet.MarshalJSON()
+		io.WriteString(w, string(marshalWallet[:]))
+
+	default:
+		w.WriteHeader(http.StatusBadRequest)
+		log.Printf("Error: Invalid http request")
+	}
+}
+
 func (ws *WalletServer) Run() {
 	http.HandleFunc("/", ws.Index)
+	http.HandleFunc("/wallet", ws.Wallet)
 
 	log.Fatal(http.ListenAndServe("0.0.0.0:"+strconv.Itoa(int(ws.port)), nil))
 }
