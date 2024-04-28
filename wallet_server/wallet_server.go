@@ -1,8 +1,8 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
-	"fmt"
 	"html/template"
 	"io"
 	"log"
@@ -10,6 +10,7 @@ import (
 	"path"
 	"strconv"
 
+	"github.com/jvsena42/go_blockchain/blockchain"
 	"github.com/jvsena42/go_blockchain/utils"
 	"github.com/jvsena42/go_blockchain/wallet"
 )
@@ -87,9 +88,31 @@ func (ws *WalletServer) CreateTransaction(w http.ResponseWriter, r *http.Request
 
 		value32 := float32(value)
 
-		fmt.Println(publicKey)
-		fmt.Println(privateKey)
-		fmt.Printf("%.3f", value32)
+		w.Header().Add("Content-Type", "application/json")
+
+		transaction := wallet.NewTransaction(privateKey, publicKey, *t.SenderBlockchainAddress, *t.RecipientBlockchainAddress, value32)
+		signature := transaction.GenerateSignature()
+		signatureStr := signature.String()
+
+		bt := &blockchain.TransactionRequest{
+			SenderBlockchainAddress:    t.SenderBlockchainAddress,
+			RecipientBlockchainAddress: t.RecipientBlockchainAddress,
+			SenderPublicKey:            t.SenderPublicKey,
+			Value:                      &value32,
+			Signature:                  &signatureStr,
+		}
+
+		m, _ := json.Marshal(bt)
+
+		buff := bytes.NewBuffer(m)
+		resp, _ := http.Post(ws.Gateway()+"/transactions", "application/json", buff)
+
+		if resp.StatusCode == 201 {
+			io.WriteString(w, string(utils.JsonStatus("success")))
+			return
+		} else {
+			io.WriteString(w, string(utils.JsonStatus("error")))
+		}
 
 	default:
 		w.WriteHeader(http.StatusBadRequest)
