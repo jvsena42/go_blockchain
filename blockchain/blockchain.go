@@ -18,22 +18,22 @@ const (
 )
 
 type Blockchain struct {
-	transactionPool   []*Transaction
-	chain             []*Block
-	blockChainAddress string
-	port              uint16
+	TransactionPool   []*Transaction
+	Chain             []*Block
+	BlockChainAddress string
+	Port              uint16
 }
 
 func (bc *Blockchain) CalculateTotalAmount(blockchainAddress string) float32 {
 	var totalAmount float32 = 0
-	for _, b := range bc.chain {
-		for _, t := range b.transactions {
-			value := t.value
-			if blockchainAddress == t.recipientAddress {
+	for _, b := range bc.Chain {
+		for _, t := range b.Transactions {
+			value := t.Value
+			if blockchainAddress == t.RecipientAddress {
 				totalAmount += value
 			}
 
-			if blockchainAddress == t.senderAddress {
+			if blockchainAddress == t.SenderAddress {
 				totalAmount -= value
 			}
 		}
@@ -45,27 +45,27 @@ func NewBlockchain(blockChainAddress string, port uint16) *Blockchain {
 	b := &Block{}
 	bc := new(Blockchain)
 	bc.CreateBlock(0, b.Hash())
-	bc.blockChainAddress = blockChainAddress
-	bc.port = port
+	bc.BlockChainAddress = blockChainAddress
+	bc.Port = port
 	return bc
 }
 
 func (bc *Blockchain) TransactionsPool() []*Transaction {
-	return bc.transactionPool
+	return bc.TransactionPool
 }
 
 func (bc *Blockchain) MarshalJson() ([]byte, error) {
 	return json.Marshal(struct {
 		Blocks []*Block `json:"chain"`
 	}{
-		Blocks: bc.chain,
+		Blocks: bc.Chain,
 	})
 }
 
 func (bc *Blockchain) CreateBlock(nonce int, previousHash [32]byte) *Block {
-	b := NewBlock(nonce, previousHash, bc.transactionPool)
-	bc.chain = append(bc.chain, b)
-	bc.transactionPool = []*Transaction{}
+	b := NewBlock(nonce, previousHash, bc.TransactionPool)
+	bc.Chain = append(bc.Chain, b)
+	bc.TransactionPool = []*Transaction{}
 	return b
 }
 
@@ -79,7 +79,7 @@ func (bc *Blockchain) AddTransaction(sender string, recipient string, value floa
 	t := NewTransaction(sender, recipient, value)
 
 	if sender == MINING_SENDER {
-		bc.transactionPool = append(bc.transactionPool, t)
+		bc.TransactionPool = append(bc.TransactionPool, t)
 		return true
 	}
 
@@ -90,7 +90,7 @@ func (bc *Blockchain) AddTransaction(sender string, recipient string, value floa
 		// 	return false
 		// }
 
-		bc.transactionPool = append(bc.transactionPool, t)
+		bc.TransactionPool = append(bc.TransactionPool, t)
 		return true
 	} else {
 		log.Println("ERROR: Could not verify transaction")
@@ -105,10 +105,10 @@ func (bc *Blockchain) VerifyTransactionSignature(senderPublicKey *ecdsa.PublicKe
 }
 
 func (bc *Blockchain) CopyTransactionPool() []*Transaction {
-	transactions := make([]*Transaction, len(bc.transactionPool))
+	transactions := make([]*Transaction, len(bc.TransactionPool))
 
-	for _, t := range bc.transactionPool {
-		transactions = append(transactions, NewTransaction(t.senderAddress, t.recipientAddress, t.value))
+	for _, t := range bc.TransactionPool {
+		transactions = append(transactions, NewTransaction(t.SenderAddress, t.RecipientAddress, t.Value))
 	}
 
 	return transactions
@@ -116,7 +116,7 @@ func (bc *Blockchain) CopyTransactionPool() []*Transaction {
 
 func (bc *Blockchain) ValidProof(nonce int, previousHash [32]byte, transactions []*Transaction, dificulty int) bool {
 	zeros := strings.Repeat("0", dificulty)
-	guessBlock := Block{timeStamp: 0, nonce: nonce, previousHash: previousHash, transactions: transactions}
+	guessBlock := Block{TimeStamp: 0, Nonce: nonce, PreviousHash: previousHash, Transactions: transactions}
 	guessHashString := fmt.Sprintf("%x", guessBlock.Hash())
 	return guessHashString[:dificulty] == zeros
 }
@@ -132,11 +132,11 @@ func (bc *Blockchain) ProofOfWOrk() int { //TODO IMPLEMENT GOROUTINES
 }
 
 func (bc *Blockchain) LastBlock() *Block {
-	return bc.chain[len(bc.chain)-1]
+	return bc.Chain[len(bc.Chain)-1]
 }
 
 func (bc *Blockchain) Mining() bool {
-	bc.AddTransaction(MINING_SENDER, bc.blockChainAddress, MINING_REWARD, nil, nil)
+	bc.AddTransaction(MINING_SENDER, bc.BlockChainAddress, MINING_REWARD, nil, nil)
 	nonce := bc.ProofOfWOrk()
 	previousHash := bc.LastBlock().Hash()
 	bc.CreateBlock(nonce, previousHash)
@@ -145,7 +145,7 @@ func (bc *Blockchain) Mining() bool {
 }
 
 func (bc *Blockchain) Print() {
-	for i, block := range bc.chain {
+	for i, block := range bc.Chain {
 		fmt.Printf("%s Block %d %s\n", strings.Repeat("=", 10), i, strings.Repeat("=", 10))
 		block.Print()
 	}

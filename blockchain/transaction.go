@@ -7,16 +7,16 @@ import (
 )
 
 type Transaction struct {
-	senderAddress    string
-	recipientAddress string
-	value            float32
+	SenderAddress    string
+	RecipientAddress string
+	Value            float32
 }
 
 func (t *Transaction) Print() {
 	fmt.Printf("%s\n", strings.Repeat("-", 40))
-	fmt.Printf("sender_blockchain_address:\t%s\n", t.senderAddress)
-	fmt.Printf("recipient_blockchain_address:\t%s\n", t.recipientAddress)
-	fmt.Printf("value:\t\t\t\t%1f\n", t.value)
+	fmt.Printf("sender_blockchain_address:\t%s\n", t.SenderAddress)
+	fmt.Printf("recipient_blockchain_address:\t%s\n", t.RecipientAddress)
+	fmt.Printf("value:\t\t\t\t%1f\n", t.Value)
 }
 
 func (t *Transaction) MarshalJson() ([]byte, error) {
@@ -25,18 +25,18 @@ func (t *Transaction) MarshalJson() ([]byte, error) {
 		RecipientAddress string  `json:"recipient_address"`
 		Value            float32 `json:"value"`
 	}{
-		SenderAddress:    t.senderAddress,
-		RecipientAddress: t.recipientAddress,
-		Value:            t.value,
+		SenderAddress:    t.SenderAddress,
+		RecipientAddress: t.RecipientAddress,
+		Value:            t.Value,
 	})
 }
 
 func NewTransaction(sender string, recipient string, value float32) *Transaction {
 
 	return &Transaction{
-		senderAddress:    sender,
-		recipientAddress: recipient,
-		value:            value,
+		SenderAddress:    sender,
+		RecipientAddress: recipient,
+		Value:            value,
 	}
 }
 

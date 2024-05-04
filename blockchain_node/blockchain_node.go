@@ -59,13 +59,21 @@ func (bcn *BlockchainNode) Transactions(w http.ResponseWriter, r *http.Request) 
 		w.Header().Add("Content-Type", "application/json")
 		bc := bcn.GetBlockchain()
 		transactions := bc.TransactionsPool()
-		m, _ := json.Marshal(struct {
+		m, err := json.Marshal(struct {
 			Transactions []*blockchain.Transaction `json:"transactions"`
 			Length       int                       `json:"length"`
 		}{
 			Transactions: transactions,
 			Length:       len(transactions),
 		})
+
+		if err != nil {
+			log.Printf("/Transactions ERROR: %v", err)
+			io.WriteString(w, string(utils.JsonStatus("Error decode")))
+			return
+		} else {
+			log.Println("Transaction Json:", string(m))
+		}
 
 		io.WriteString(w, string(m[:]))
 
