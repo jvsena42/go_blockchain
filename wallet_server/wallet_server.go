@@ -40,7 +40,7 @@ func (ws *WalletServer) Index(w http.ResponseWriter, r *http.Request) {
 		t, _ := template.ParseFiles(path.Join(pathToTemplateDir, "index.html"))
 		t.Execute(w, "")
 	default:
-		log.Printf("/Index Error: Invalid http request", r.Method)
+		log.Println("/Index Error: Invalid http request", r.Method)
 	}
 }
 
@@ -54,7 +54,7 @@ func (ws *WalletServer) Wallet(w http.ResponseWriter, r *http.Request) {
 
 	default:
 		w.WriteHeader(http.StatusBadRequest)
-		log.Printf("/wallet Error: Invalid http request", r.Method)
+		log.Println("/wallet Error: Invalid http request", r.Method)
 	}
 }
 
@@ -102,10 +102,22 @@ func (ws *WalletServer) CreateTransaction(w http.ResponseWriter, r *http.Request
 			Signature:                  &signatureStr,
 		}
 
-		m, _ := json.Marshal(bt)
+		m, err := json.Marshal(bt)
+
+		if err != nil {
+			log.Printf("/Trancasctions ERROR: parsing json %v", err)
+			io.WriteString(w, string(utils.JsonStatus("fail")))
+			return
+		}
 
 		buff := bytes.NewBuffer(m)
-		resp, _ := http.Post(ws.Gateway()+"/transactions", "application/json", buff)
+		resp, err := http.Post(ws.Gateway()+"/transactions", "application/json", buff)
+
+		if err != nil {
+			log.Printf("/Trancasctions ERROR: request %v", err)
+			io.WriteString(w, string(utils.JsonStatus("fail")))
+			return
+		}
 
 		if resp.StatusCode == 201 {
 			io.WriteString(w, string(utils.JsonStatus("success")))
