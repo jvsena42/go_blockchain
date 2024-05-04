@@ -40,7 +40,7 @@ func (ws *WalletServer) Index(w http.ResponseWriter, r *http.Request) {
 		t, _ := template.ParseFiles(path.Join(pathToTemplateDir, "index.html"))
 		t.Execute(w, "")
 	default:
-		log.Printf("Error: Invalid http request")
+		log.Printf("/Index Error: Invalid http request", r.Method)
 	}
 }
 
@@ -54,7 +54,7 @@ func (ws *WalletServer) Wallet(w http.ResponseWriter, r *http.Request) {
 
 	default:
 		w.WriteHeader(http.StatusBadRequest)
-		log.Printf("Error: Invalid http request")
+		log.Printf("/wallet Error: Invalid http request", r.Method)
 	}
 }
 
@@ -116,14 +116,14 @@ func (ws *WalletServer) CreateTransaction(w http.ResponseWriter, r *http.Request
 
 	default:
 		w.WriteHeader(http.StatusBadRequest)
-		log.Println("ERROR: Invalid HTTP method")
+		log.Println("/transactions ERROR: Invalid HTTP method", r.Method)
 	}
 }
 
 func (ws *WalletServer) Run() {
 	http.HandleFunc("/", ws.Index)
 	http.HandleFunc("/wallet", ws.Wallet)
-	http.HandleFunc("/transaction", ws.CreateTransaction)
+	http.HandleFunc("/transactions", ws.CreateTransaction)
 
 	log.Fatal(http.ListenAndServe("0.0.0.0:"+strconv.Itoa(int(ws.port)), nil))
 }

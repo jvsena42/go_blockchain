@@ -37,7 +37,7 @@
 				}
 
 				$.ajax({
-					url: '/transaction',
+					url: '/transactions',
 					type: 'POST',
 					contentType: 'appication/json',
 					data: JSON.stringify(transaction_data),
@@ -51,7 +51,7 @@
 					},
 					error: function(response) {
 						console.error(response);
-						allert('Send failed');
+						alert('Send failed');
 					} 
 				})
 			})
