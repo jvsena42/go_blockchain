@@ -155,13 +155,31 @@ func (bcn *BlockchainNode) StartMine(w http.ResponseWriter, r *http.Request) {
 		log.Println("ERROR: Invalid http method")
 		w.WriteHeader(http.StatusBadRequest)
 	}
-
 }
+
+func (bcn *BlockchainNode) Amount(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case http.MethodGet:
+		blockchainAddress := r.URL.Query().Get("blockchain_address")
+		amount := bcn.GetBlockchain().CalculateTotalAmount(blockchainAddress)
+		amountResponse := &blockchain.AmountResponse{Amount: amount}
+		m, _ := json.Marshal(amountResponse)
+
+		w.Header().Add("Content-Type", "application/json")
+		io.WriteString(w, string(m[:]))
+
+	default:
+		log.Println("ERROR: Invalid http method")
+		w.WriteHeader(http.StatusBadRequest)
+	}
+}
+
 func (bcn *BlockchainNode) Run() {
 	http.HandleFunc("/", bcn.GetChain)
 	http.HandleFunc("/transactions", bcn.Transactions)
 	http.HandleFunc("/mine", bcn.Mine)
 	http.HandleFunc("/mine/start", bcn.StartMine)
+	http.HandleFunc("/amount", bcn.Amount)
 
 	log.Fatal(http.ListenAndServe("0.0.0.0:"+strconv.Itoa(int(bcn.port)), nil))
 }

@@ -125,7 +125,7 @@ func (bc *Blockchain) ValidProof(nonce int, previousHash [32]byte, transactions 
 	return guessHashString[:dificulty] == zeros
 }
 
-func (bc *Blockchain) ProofOfWOrk() int { //TODO IMPLEMENT GOROUTINES
+func (bc *Blockchain) ProofOfWOrk() int {
 	transaction := bc.CopyTransactionPool()
 	previousHash := bc.LastBlock().Hash()
 	nonce := 0
@@ -166,4 +166,8 @@ func (bc *Blockchain) Print() {
 		block.Print()
 	}
 	fmt.Printf("%s\n", strings.Repeat("#", 30))
+}
+
+type AmountResponse struct {
+	Amount float32 `json:"amount"`
 }
