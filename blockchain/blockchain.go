@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"log"
 	"strings"
+	"sync"
+	"time"
 
 	"github.com/jvsena42/go_blockchain/utils"
 )
@@ -15,6 +17,7 @@ const (
 	MINING_DIFICULTY = 3
 	MINING_SENDER    = "BLOCKCHAIN REWARD SYSTEM"
 	MINING_REWARD    = 1.0
+	MINING_TIMER_SEC = 20
 )
 
 type Blockchain struct {
@@ -22,6 +25,7 @@ type Blockchain struct {
 	Chain             []*Block
 	BlockChainAddress string
 	Port              uint16
+	mux               sync.Mutex
 }
 
 func (bc *Blockchain) CalculateTotalAmount(blockchainAddress string) float32 {
@@ -135,7 +139,19 @@ func (bc *Blockchain) LastBlock() *Block {
 	return bc.Chain[len(bc.Chain)-1]
 }
 
+func (bc *Blockchain) StartMining() {
+	bc.Mining()
+	_ = time.AfterFunc(time.Second*MINING_TIMER_SEC, bc.StartMining)
+}
+
 func (bc *Blockchain) Mining() bool {
+	bc.mux.Lock()
+	defer bc.mux.Unlock()
+
+	if len(bc.TransactionPool) == 0 {
+		return false
+	}
+
 	bc.AddTransaction(MINING_SENDER, bc.BlockChainAddress, MINING_REWARD, nil, nil)
 	nonce := bc.ProofOfWOrk()
 	previousHash := bc.LastBlock().Hash()
