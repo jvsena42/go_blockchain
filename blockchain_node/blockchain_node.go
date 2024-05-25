@@ -111,11 +111,48 @@ func (bcn *BlockchainNode) Transactions(w http.ResponseWriter, r *http.Request) 
 		}
 		io.WriteString(w, string(responseByte))
 
+	case http.MethodPut:
+		decoder := json.NewDecoder((r.Body))
+		var t blockchain.TransactionRequest
+		err := decoder.Decode(&t)
+
+		if err != nil {
+			log.Printf("ERROR: %v", err)
+			io.WriteString(w, string(utils.JsonStatus("Error decode")))
+			return
+		}
+
+		if !t.Valid() {
+			log.Println("ERROR: Missing fields!")
+			io.WriteString(w, string(utils.JsonStatus("ERROR: Missing fields!")))
+			return
+		}
+
+		publicKey := utils.StringToPublicKey(*t.SenderPublicKey)
+		signature := utils.StringToSignature(*t.Signature)
+		bc := bcn.GetBlockchain()
+
+		isUpdated := bc.AddTransaction(*t.SenderBlockchainAddress, *t.RecipientBlockchainAddress, *t.Value, publicKey, signature)
+
+		w.Header().Add("Content-Type", "application/json")
+		var responseByte []byte
+		if !isUpdated {
+			w.WriteHeader(http.StatusBadRequest)
+			responseByte = utils.JsonStatus("Fail adding transaction")
+		} else {
+			responseByte = utils.JsonStatus("Success!")
+		}
+		io.WriteString(w, string(responseByte))
+
+	case http.MethodDelete:
+		bc := bcn.GetBlockchain()
+		bc.ClearTransactionPool()
+		io.WriteString(w, string(utils.JsonStatus("success")))
+
 	default:
 		log.Println("ERROR: Invalid http method")
 		w.WriteHeader(http.StatusBadRequest)
 	}
-
 }
 
 func (bcn *BlockchainNode) Mine(w http.ResponseWriter, r *http.Request) {

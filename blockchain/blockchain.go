@@ -99,6 +99,10 @@ func (bc *Blockchain) TransactionsPool() []*Transaction {
 	return bc.TransactionPool
 }
 
+func (bc *Blockchain) ClearTransactionPool() {
+	bc.TransactionPool = bc.TransactionPool[:0]
+}
+
 func (bc *Blockchain) MarshalJson() ([]byte, error) {
 	return json.Marshal(struct {
 		Blocks []*Block `json:"chain"`
