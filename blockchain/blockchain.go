@@ -1,11 +1,13 @@
 package blockchain
 
 import (
+	"bytes"
 	"crypto/ecdsa"
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
 	"log"
+	"net/http"
 	"strings"
 	"sync"
 	"time"
@@ -120,8 +122,36 @@ func (bc *Blockchain) CreateBlock(nonce int, previousHash [32]byte) *Block {
 
 func (bc *Blockchain) CreateTransaction(sender string, recipient string, value float32, senderPublicKey *ecdsa.PublicKey, s *utils.Signature) bool {
 	isTransacted := bc.AddTransaction(sender, recipient, value, senderPublicKey, s)
-	//TODO SYNC NODES
+
+	if isTransacted {
+		bc.broadcasTransaction(senderPublicKey, s, sender, recipient, value)
+	}
+
 	return isTransacted
+}
+
+func (bc *Blockchain) broadcasTransaction(senderPublicKey *ecdsa.PublicKey, s *utils.Signature, sender string, recipient string, value float32) {
+	for _, neighborIPAddress := range bc.neighbors {
+		publicKeyStr := fmt.Sprintf("%064x%064x", senderPublicKey.X.Bytes(), senderPublicKey.Y.Bytes())
+		signatureStr := s.String()
+		bt := &TransactionRequest{
+			&sender,
+			&recipient,
+			&publicKeyStr,
+			&value,
+			&signatureStr}
+		marshalJson, _ := json.Marshal(bt)
+
+		buf := bytes.NewBuffer(marshalJson)
+		endpoint := fmt.Sprintf("http://%s/transactions", neighborIPAddress)
+
+		client := &http.Client{}
+		request, _ := http.NewRequest("PUT", endpoint, buf)
+		response, err := client.Do(request)
+		if err != nil {
+			log.Printf("%v", response)
+		}
+	}
 }
 
 func (bc *Blockchain) AddTransaction(sender string, recipient string, value float32, senderPublicKey *ecdsa.PublicKey, s *utils.Signature) bool {
