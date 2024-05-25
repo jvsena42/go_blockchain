@@ -256,6 +256,28 @@ func (bc *Blockchain) Print() {
 	fmt.Printf("%s\n", strings.Repeat("#", 30))
 }
 
+func (bc *Blockchain) ValidChain(chain []*Block) bool {
+	previousBlock := chain[0]
+	currentIndex := 1
+
+	for currentIndex < len(chain) {
+		block := chain[currentIndex]
+		if block.PreviousHash != previousBlock.Hash() {
+			return false
+		}
+
+		if !bc.ValidProof(block.Nonce, block.PreviousHash, block.Transactions, MINING_DIFICULTY) {
+			return false
+		}
+
+		previousBlock = block
+		currentIndex++
+
+	}
+
+	return true
+}
+
 type AmountResponse struct {
 	Amount float32 `json:"amount"`
 }
