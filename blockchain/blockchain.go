@@ -117,6 +117,19 @@ func (bc *Blockchain) CreateBlock(nonce int, previousHash [32]byte) *Block {
 	b := NewBlock(nonce, previousHash, bc.TransactionPool)
 	bc.Chain = append(bc.Chain, b)
 	bc.TransactionPool = []*Transaction{}
+
+	for _, neighborIPAddress := range bc.neighbors {
+
+		endpoint := fmt.Sprintf("http://%s/transactions", neighborIPAddress)
+
+		client := &http.Client{}
+		request, _ := http.NewRequest("DELETE", endpoint, nil)
+		response, err := client.Do(request)
+		if err != nil {
+			log.Printf("%v", response)
+		}
+	}
+
 	return b
 }
 
