@@ -35,8 +35,8 @@ func NewTransaction(
 
 func (t *Transaction) MarshalJson() ([]byte, error) {
 	return json.Marshal(struct {
-		SenderAddress    string  `json:"sender_address"`
-		RecipientAddress string  `json:"recipient_address"`
+		SenderAddress    string  `json:"sender_blockchain_address"`
+		RecipientAddress string  `json:"recipient_blockchain_address"`
 		Value            float32 `json:"value"`
 	}{
 		SenderAddress:    t.senderAddress,
