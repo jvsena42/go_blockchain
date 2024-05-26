@@ -21,14 +21,32 @@ func (t *Transaction) Print() {
 
 func (t *Transaction) MarshalJson() ([]byte, error) {
 	return json.Marshal(struct {
-		SenderAddress    string  `json:"sender_address"`
-		RecipientAddress string  `json:"recipient_address"`
+		SenderAddress    string  `json:"sender_blockchain_address"`
+		RecipientAddress string  `json:"recipient_blockchain_address"`
 		Value            float32 `json:"value"`
 	}{
 		SenderAddress:    t.SenderAddress,
 		RecipientAddress: t.RecipientAddress,
 		Value:            t.Value,
 	})
+}
+
+func (t *Transaction) UnmarshalJson(data []byte) error {
+	v := struct {
+		SenderAddress    *string  `json:"sender_blockchain_address"`
+		RecipientAddress *string  `json:"recipient_blockchain_address"`
+		Value            *float32 `json:"value"`
+	}{
+		SenderAddress:    &t.SenderAddress,
+		RecipientAddress: &t.RecipientAddress,
+		Value:            &t.Value,
+	}
+
+	if err := json.Unmarshal(data, &v); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func NewTransaction(sender string, recipient string, value float32) *Transaction {

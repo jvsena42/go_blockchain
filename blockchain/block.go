@@ -2,6 +2,7 @@ package blockchain
 
 import (
 	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"time"
@@ -49,4 +50,28 @@ func (b *Block) MarshalJson() ([]byte, error) {
 		TimeStamp:    b.TimeStamp,
 		Transactions: b.Transactions,
 	})
+}
+
+func (b *Block) UnmarshalJson(data []byte) error {
+	var previousHash string
+
+	v := struct {
+		Nonce        *int            `json:"nonce"`
+		PreviousHash *string         `json:"previous_hash"`
+		TimeStamp    *int64          `json:"time_stamp"`
+		Transactions *[]*Transaction `json:"transactions"`
+	}{
+		Nonce:        &b.Nonce,
+		PreviousHash: &previousHash,
+		TimeStamp:    &b.TimeStamp,
+		Transactions: &b.Transactions,
+	}
+
+	if err := json.Unmarshal(data, &v); err != nil {
+		return err
+	}
+
+	ph, _ := hex.DecodeString(*v.PreviousHash)
+	copy(b.PreviousHash[:], ph[:32])
+	return nil
 }
