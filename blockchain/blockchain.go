@@ -67,6 +67,8 @@ func NewBlockchain(blockChainAddress string, port uint16) *Blockchain {
 
 func (bc *Blockchain) Run() {
 	bc.StartSyncNeighbors()
+	bc.ResolveConflicts()
+	bc.StartMining()
 }
 
 func (bc *Blockchain) SetNeightbors() {
@@ -245,6 +247,17 @@ func (bc *Blockchain) Mining() bool {
 	previousHash := bc.LastBlock().Hash()
 	bc.CreateBlock(nonce, previousHash)
 	log.Println("action=mining, status=success")
+
+	for _, n := range bc.neighbors {
+		endpoint := fmt.Sprintf("http://%s/consensus", n)
+		client := &http.Client{}
+		request, _ := http.NewRequest("PUT", endpoint, nil)
+		response, err := client.Do(request)
+		if err != nil {
+			log.Printf("%v", response)
+		}
+	}
+
 	return true
 }
 
